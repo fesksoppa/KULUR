@@ -2,16 +2,54 @@
 
 
 #include "main.h"
+#include "stdbool.h"
+#include "kulur_functions.h"
 
 /* Function Display_Seven_Seg
-Input: Seg_Number - Decides which display to me lit
-       Number- Decides which number to be shown, 0-9.
+Input: Temp - New temp value
+       new_temp- Ture if you want to update temp, else false.
 Output: None
 */
 
- void Display_Seven_Seg(uint8_t Seg_Number ,uint8_t Number){
-     //---------- 7-SEGMENT ---------------------- 
-    switch(Seg_Number){
+ void Display_Seven_Seg(uint16_t temp ,bool new_temp){
+   
+
+  static uint8_t tempAndTimeValues[8];
+   
+  uint8_t display_counter=0;
+  uint8_t hour;
+  uint8_t min;
+ 
+  Show_RTC_Time(&hour,&min); //Get current time 
+ if(new_temp)
+  {
+    if(temp>=512) // Negativ temp
+    {
+      tempAndTimeValues[0]=10;
+      temp-=512;
+      
+    }
+    else
+    tempAndTimeValues[0]=11;
+    
+    tempAndTimeValues[1]=temp/100;
+    tempAndTimeValues[2]=(temp%100)/10;
+    tempAndTimeValues[3]=temp%10;
+  }
+  
+  tempAndTimeValues[4]=hour/10;
+  tempAndTimeValues[5]=hour%10;
+  tempAndTimeValues[6]=min/10;
+  tempAndTimeValues[7]=min%10;
+  
+
+  //display_counter=1;
+   
+  while(display_counter<8)
+  {
+    
+      //---------- 7-SEGMENT ---------------------- 
+    switch(display_counter){
       case 0:   //DIG1term
         
         //Term_Displays
@@ -27,11 +65,11 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
         
         //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
-        printf("DISPLAY: DIG1term---");
+        
         break;
         
        case 1:   //DIG2term
@@ -44,15 +82,16 @@ Output: None
         
         //CLOCK_Displays
         HAL_GPIO_WritePin(GPIOC,DIG1clk_Pin,GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC,DIG2clk_Pin,GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
+       HAL_GPIO_WritePin(GPIOC,DIG2clk_Pin,GPIO_PIN_RESET);
+       HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET);
+       HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
         
         //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
         
-        HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_RESET); //Decimalpunkt
-        printf("DISPLAY: DIG2term---");
+        HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
+        
+         
         break;
         
        case 2:   //DIG3term
@@ -70,11 +109,12 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
        
         //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
         
-        HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
+        HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_RESET); //Decimalpunkt
         
-        printf("DISPLAY: DIG3term---");
+        
+        
         break;
         
        case 3:   //DIG4term
@@ -92,12 +132,12 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
        
         //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
         
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
-        printf("DISPLAY: DIG4term---");
+        
         break;
         
        case 4:   //DIG1clk
@@ -115,11 +155,11 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
         
         //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
-        printf("DISPLAY: DIG1clk---");
+        
         break;
         
        case 5:   //DIG2clk
@@ -137,11 +177,11 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
       
         //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
-        printf("DISPLAY: DIG2clk---");
+        
         break;
         
        case 6:   //DIG3clk
@@ -159,11 +199,11 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
         
         //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
-        printf("DISPLAY: DIG3clk---");
+       
         break;
         
         case 7:   //DIG4clk
@@ -181,15 +221,15 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_SET); //set
        
         //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
         
-        printf("DISPLAY: DIG4clk---");
+       
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
         break;
         
         //TA BORT, DENNA ÄR SEPARAT KOLLA PINNE FÖR ATT TÄNDA
-        case 8:   //Kolon
+        /*case 8:   //Kolon
         
         //Term_Displays
         HAL_GPIO_WritePin(GPIOC,DIG1term_Pin,GPIO_PIN_RESET); 
@@ -204,15 +244,15 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
        
         //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
+        HAL_GPIO_TogglePin(GPIOC,Kolon_Pin);
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
-        printf("DISPLAY: Kolon---");
+        
         break;
         
         
-       
+       */
         
     default:
       ;
@@ -220,7 +260,7 @@ Output: None
     
     
     //---------------- DISPLAY NUMBER------------------------
-    switch(Number){
+    switch(tempAndTimeValues[display_counter]){
       
     case 0: 
       HAL_GPIO_WritePin(GPIOD,A_led_Pin,GPIO_PIN_RESET);
@@ -232,7 +272,7 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_SET);
       //Tänk på DP, ligger över 
       
-      printf("NUMBER: 0 \n");
+      
       break;
       
      case 1: 
@@ -244,7 +284,7 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_SET);
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_SET);
       //Tänk på DP, ligger över 
-      printf("NUMBER: 1 \n");
+    
       break;
       
       case 2: 
@@ -256,7 +296,7 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_SET);
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_RESET);
       //Tänk på DP, ligger över 
-      printf("NUMBER: 2 \n");
+     
       break;
       
       case 3: 
@@ -268,7 +308,7 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_SET);
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_RESET);
       //Tänk på DP, ligger över 
-      printf("NUMBER: 3 \n");
+     
       break;
       
       
@@ -281,7 +321,7 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_RESET);
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_RESET);
       //Tänk på DP, ligger över 
-      printf("NUMBER: 4 \n");
+     
       break;
       
      case 5: 
@@ -293,7 +333,8 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_RESET);
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_RESET);
       //Tänk på DP, ligger över 
-      printf("NUMBER: 5 \n");
+      
+      
       break;
       
        case 6: 
@@ -305,7 +346,7 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_RESET);
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_RESET);
       //Tänk på DP, ligger över 
-      printf("NUMBER: 6 \n");
+      
       break;
       
        case 7: 
@@ -317,7 +358,8 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_SET);
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_SET);
       //Tänk på DP, ligger över 
-      printf("NUMBER: 7 \n");
+     
+      
       
       break;
       
@@ -330,10 +372,10 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_RESET);
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_RESET);
       //Tänk på DP, ligger över 
-      printf("NUMBER: 8 \n");
+      
       break;
       
-       case 9: 
+      case 9: 
       HAL_GPIO_WritePin(GPIOD,A_led_Pin,GPIO_PIN_RESET);
       HAL_GPIO_WritePin(GPIOD,B_led_Pin,GPIO_PIN_RESET);
       HAL_GPIO_WritePin(GPIOD,C_led_Pin,GPIO_PIN_RESET);
@@ -342,12 +384,45 @@ Output: None
       HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_RESET);
       HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_RESET);
       //Tänk på DP, ligger över 
-      printf("NUMBER: 9 \n");
+      
       break;
       
-     default: 
-       ;
+      case 10: //-
+      HAL_GPIO_WritePin(GPIOD,A_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,B_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,C_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,D_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,E_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_RESET);
+   
+      break;
+      
+     default:   
+      HAL_GPIO_WritePin(GPIOD,A_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,B_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,C_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,D_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,E_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_SET);
+      
+      break;
     }
-
+    
+    
+    
+   
+    
+    
+    
+    display_counter++;
+    HAL_Delay(1);
+   
+  } //While loop
+  
+    //Kolon
+   // HAL_GPIO_TogglePin(GPIOC,Kolon_Pin);
+  
    return; //end of function
  }

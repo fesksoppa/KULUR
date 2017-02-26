@@ -38,7 +38,6 @@ void MX_RTC_Init(void)
   {
     Error_Handler();
   }
-
 }
 
 void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
@@ -166,7 +165,7 @@ void RTC_TimeConfig(){
 } 
 
 //Updates Real time variables and date. 
-void Show_RTC_Time(uint8_t* hour, uint8_t* min, uint8_t* sec ){
+void Show_RTC_Time(uint8_t* hour, uint8_t* min){
   
    RTC_TimeTypeDef stimestructureget;
    RTC_DateTypeDef sdatestructureget; //Needed to unlock the time
@@ -176,10 +175,10 @@ void Show_RTC_Time(uint8_t* hour, uint8_t* min, uint8_t* sec ){
    
    *min=stimestructureget.Minutes;
    *hour=stimestructureget.Hours;
-   *sec=stimestructureget.Seconds;
+  // *sec=stimestructureget.Seconds;
    
     
-   printf("Test_Date! %2d-%2d-%2d  \n ",sdatestructureget.Year,sdatestructureget.Month, sdatestructureget.Date);
+  // printf("Test_Date! %2d-%2d-%2d  \n ",sdatestructureget.Year,sdatestructureget.Month, sdatestructureget.Date);
   
     return;
 }

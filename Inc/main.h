@@ -54,6 +54,7 @@
 
 
 /* Private define ------------------------------------------------------------*/
+#define NUMBER_OF_PREAMBLE_BITS 9
 #define BUFFERSIZEDATE 10
 #define BUFFERSIZETIME 5
 #define MINIMUM_DUTY_TICKS 500

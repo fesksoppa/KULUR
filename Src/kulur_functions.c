@@ -17,10 +17,10 @@ Output: None
   static uint8_t tempAndTimeValues[8];
    
   uint8_t display_counter=0;
-  uint8_t hour;
-  uint8_t min;
+  uint8_t hour=12;
+  uint8_t min=34;
  
-  Show_RTC_Time(&hour,&min); //Get current time 
+ // Show_RTC_Time(&hour,&min); //Get current time 
  if(new_temp)
   {
     if(temp>=512) // Negativ temp
@@ -45,7 +45,7 @@ Output: None
 
   //display_counter=1;
    
-  while(display_counter<8)
+  while(display_counter<8 && !new_temp )
   {
     
       //---------- 7-SEGMENT ---------------------- 
@@ -228,31 +228,6 @@ Output: None
         
         break;
         
-        //TA BORT, DENNA ÄR SEPARAT KOLLA PINNE FÖR ATT TÄNDA
-        /*case 8:   //Kolon
-        
-        //Term_Displays
-        HAL_GPIO_WritePin(GPIOC,DIG1term_Pin,GPIO_PIN_RESET); 
-        HAL_GPIO_WritePin(GPIOC,DIG2term_Pin,GPIO_PIN_RESET); 
-        HAL_GPIO_WritePin(GPIOC,DIG3term_Pin,GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC,DIG4term_Pin,GPIO_PIN_RESET);
-        
-        //CLOCK_Displays
-        HAL_GPIO_WritePin(GPIOC,DIG1clk_Pin,GPIO_PIN_RESET); 
-        HAL_GPIO_WritePin(GPIOC,DIG2clk_Pin,GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
-       
-        //Kolon
-        HAL_GPIO_TogglePin(GPIOC,Kolon_Pin);
-        
-        HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
-        
-        
-        break;
-        
-        
-       */
         
     default:
       ;

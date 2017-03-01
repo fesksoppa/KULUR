@@ -9,23 +9,21 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stdbool.h"
+
 #include "stm32f3xx_hal.h"
 #include "cmsis_os.h"
 #include "rtc.h"
 #include "tim.h"
 #include "usart.h"
-#include "string.h"
-#include "crc.h"
+
 #include "stm32f3_discovery.h" 
 
     
 void SystemClock_Config(void);
 void Error_Handler(void);
 void MX_FREERTOS_Init(void);
-void frame_decoder(uint32_t radio_frame[]);
-void Send_zero(void);
-void Send_one(void);
+
+
 
 int main(void)
 {
@@ -47,12 +45,12 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
- // MX_USART3_UART_Init();
- // MX_RTC_Init();
+  //MX_USART3_UART_Init();
+  MX_RTC_Init();
   
  // RTC_TimeConfig();
   
-  MX_TIM1_Init();
+ // MX_TIM1_Init();
   MX_CRC_Init();
 
 
@@ -91,59 +89,23 @@ int main(void)
     }//FOR-loop */
   
   
-  
+ int temp=215; 
   
  while (1)
  {
    
-   
+ static char tempString[4];
+  tempString[0]=temp/100;
+  tempString[1]=(temp/10)%10;
+  tempString[2]=',';
+  tempString[3]=(temp%100)%10;
+  
+  for(int i=0;i<4;i++)
+  {
+    printf("%s \n",tempString[i]);
+  }
         
-   /*    //CLOCK_Displays
-        HAL_GPIO_WritePin(GPIOC,DIG1clk_Pin,GPIO_PIN_RESET); 
-        HAL_GPIO_WritePin(GPIOC,DIG2clk_Pin,GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_SET); //set
-        HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
-        
-        //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
-        
-        HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
-        
-        
-        
-      HAL_GPIO_WritePin(GPIOD,A_led_Pin,GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOD,B_led_Pin,GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOD,C_led_Pin,GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOD,D_led_Pin,GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOD,E_led_Pin,GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_SET);
-   
-      HAL_Delay(5);
-      
-       
-        
-        //CLOCK_Displays
-       HAL_GPIO_WritePin(GPIOC,DIG1clk_Pin,GPIO_PIN_RESET); 
-       HAL_GPIO_WritePin(GPIOC,DIG2clk_Pin,GPIO_PIN_RESET);
-       HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET); 
-       HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_SET); //set
-       
-        //Kolon
-       HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
-      
-      
-      HAL_GPIO_WritePin(GPIOD,A_led_Pin,GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOD,B_led_Pin,GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOD,C_led_Pin,GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOD,D_led_Pin,GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOD,E_led_Pin,GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOD,F_led_Pin,GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOD,G_led_Pin,GPIO_PIN_SET);
-   
-   HAL_Delay(5);
-   */
-   
+  
    
   //Display Test, trying all combinations.  
    //for(int i=0;i<NUMBER_OF_NUMBERS;i++)
@@ -152,14 +114,13 @@ int main(void)
       //{
        // HAL_GPIO_TogglePin(GPIOE,LD8_Pin); //PE14 && PA8
        // HAL_Delay(8);
-        Display_Seven_Seg(3,false);
+    //    Display_Seven_Seg(3,false);
       //  HAL_GPIO_TogglePin(GPIOE,LD8_Pin); //PE14 && PA8
         //HAL_Delay(1000);
       //}
     //}   
    
-    //HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_14);
-    //HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_13);
+   
     
     
     //---------RTC TEST && UART TEST----------------------------------
@@ -241,379 +202,14 @@ int main(void)
    // Display_Seven_Seg(225,false); //Dubbelkolla
     //HAL_Delay(1000);
 
-   //************* Radio TEST *************
-   
-   
-/*   BSP_LED_On(LED3);   
-    
 
-   Send_one();  // Preamble 9 ones
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    
-    Send_zero();  // Net id? 01001
-    Send_one();
-    Send_zero();
-    Send_zero();
-    Send_one();
-
-    Send_zero();  // Channel number 000
-    Send_zero();
-    Send_zero();   
-
-    Send_zero();  // Unknown 011100
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_zero();
-    Send_zero();
-    
-    Send_zero();  // Temperature 00 1101 0111 21,5 C
-    Send_zero();   
-
-    Send_one();
-    Send_one();
-    Send_zero();
-    Send_one();
-
-    Send_zero();
-    Send_one();
-    Send_one();
-    Send_one();
-
-    Send_zero();  // Unknown 0
-    
-    Send_zero();  // Humidity 010 0010 34%
-    Send_one();
-    Send_zero();
-
-    Send_zero();
-    Send_zero();
-    Send_one();
-    Send_zero();
-
-    Send_zero();   // CRC-8 0101 1101
-    Send_one();
-    Send_zero();
-    Send_one();
-
-    Send_one();
-    Send_one(); 
-    Send_zero();
-    Send_one();
-   
-   
-    BSP_LED_Off(LED3);
-          
-   HAL_Delay(20000);
-   
-   
-   
-   
-    Send_one();  // Preamble 9 ones
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_one();
-    
-    Send_zero();  // Net id? 01001
-    Send_one();
-    Send_zero();
-    Send_zero();
-    Send_one();
-
-    Send_zero();  // Channel number 000
-    Send_zero();
-    Send_zero();   
-
-    Send_zero();  // Unknown 011100
-    Send_one();
-    Send_one();
-    Send_one();
-    Send_zero();
-    Send_zero();
-    
-    Send_one();  // Temperature 00 1101 0111 21,5 C
-    Send_zero();   
-
-    Send_one();
-    Send_one();
-    Send_zero();
-    Send_zero();
-
-    Send_zero();
-    Send_one();
-    Send_one();
-    Send_one();
-
-    Send_zero();  // Unknown 0
-    
-    Send_zero();  // Humidity 010 0010 34%
-    Send_one();
-    Send_zero();
-
-    Send_zero();
-    Send_zero();
-    Send_one();
-    Send_zero();
-
-    Send_zero();   // CRC-8 0101 1101
-    Send_one();
-    Send_zero();
-    Send_one();
-
-    Send_one();
-    Send_one(); 
-    Send_zero();
-    Send_one();
-    
- 
-   
-   HAL_Delay(10000);
-   */
     }
 }  
 
 
 
 
-///******* CALLLBACK INTERRUPT *******
-//******* Handles interrupt from the Radioreceiver, checks for preamble and
-//*******  then store the values. 
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
-  static uint32_t duty_in_microseconds=0;
-  static uint32_t radio_frame[FRAME_SIZE];
-  static uint32_t preamble_bits[NUMBER_OF_PREAMBLE_BITS];
-  static uint8_t bit_counter=0;
-  static uint8_t preamble_counter=0;
-  static bool preamble_flag=false;
-  
-  
-  //Lock function
-  HAL_TIM_IC_Stop_IT(&htim1, TIM_CHANNEL_2);
-  
-  //Captures the pulse width
-  if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
-  {
-    duty_in_microseconds=HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
-    
-   
-  //Checks for preamble bits and sets a flag when 9 "1" in a row
-    
-   if(duty_in_microseconds>MINIMUM_DUTY_TICKS && duty_in_microseconds <MAX_DUTY_TICKS && !preamble_flag)
-    {
-       if(duty_in_microseconds <PULSE_WIDTH_ONE)
-       {
-         preamble_bits[preamble_counter]=duty_in_microseconds;
-         preamble_counter++;
-       
-       }
-       else
-         preamble_counter=0;
-   
-    } 
-    //Fills the array with bits from Radiorecevier, trys to block the interference 
-   if(preamble_flag && duty_in_microseconds>MINIMUM_DUTY_TICKS && duty_in_microseconds <MAX_DUTY_TICKS)
-    {
-      if(bit_counter > 39)
-      {
-        bit_counter=0;
-        preamble_flag=false;
-        preamble_counter=0;
-        frame_decoder(radio_frame); //New temp value
-      }
-      else if(duty_in_microseconds < PULSE_WIDTH_ONE)
-      {
-        radio_frame[bit_counter]=duty_in_microseconds;
-        bit_counter++; 
-      
-      }
-      else if(duty_in_microseconds>PULSE_WIDTH_ZERO)
-      {
-        radio_frame[bit_counter]=duty_in_microseconds;
-        bit_counter++; 
-      }
-      
-    } 
-    
-      if(preamble_counter==PREAMBLE_SIZE && !preamble_flag)
-       {
-         preamble_flag=true;
-       }
-  }
-  //Unlock function
-   HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2);
-      
-  return;
-}
-  
-void frame_decoder(uint32_t radio_frame[])
-{
-  static uint32_t decoded_frame[FRAME_SIZE];
-  static uint16_t temp=0;
-  bool find_id=false;
  
- /*   while(!find_id)
-    {
-      
-    }
-*/    
-    
-  
-   // printf("It's inside!!!!! :) 8===(-)\n");
-    for(int i;i<FRAME_SIZE;i++)
-    {
-      if(radio_frame[i]>=500 && radio_frame[i] <=PULSE_WIDTH_ONE)
-      {
-        decoded_frame[i]=1;
-      }
-      else if(radio_frame[i]>=1400 && radio_frame[i] <=1600)
-      {
-        decoded_frame[i]=0;
-      }
-   //   printf("Index%d = %d \n ",i,decoded_frame[i]);
-    }
-    
-    // CRC FUCK
-/*    decoded_frame[39]=1;
-    decoded_frame[38]=0;
-    decoded_frame[37]=1;
-    decoded_frame[36]=1;
-    decoded_frame[35]=1;
-    decoded_frame[34]=0;
-    decoded_frame[33]=1;
-    decoded_frame[32]=0;
-    
-    decoded_frame[31]=0;
-    decoded_frame[30]=1;
-    decoded_frame[29]=0;
-    decoded_frame[28]=0;
-    decoded_frame[27]=0;
-    decoded_frame[26]=1;
-    decoded_frame[25]=0;
-    decoded_frame[24]=0;
-    
-    decoded_frame[23]=1;
-    decoded_frame[22]=1;
-    decoded_frame[21]=1;
-    decoded_frame[20]=0;
-    decoded_frame[19]=1;
-    decoded_frame[18]=0;
-    decoded_frame[17]=1;
-    decoded_frame[16]=1;
-    
-    decoded_frame[15]=0;
-    decoded_frame[14]=0;
-    decoded_frame[13]=0;
-    decoded_frame[12]=0;
-    decoded_frame[11]=1;
-    decoded_frame[10]=1;
-    decoded_frame[9]=1;
-    decoded_frame[8]=0;
-    
-    decoded_frame[7]=0;
-    decoded_frame[6]=0;
-    decoded_frame[5]=0;
-    decoded_frame[4]=1;
-    decoded_frame[3]=0;
-    decoded_frame[2]=0;
-    decoded_frame[1]=1;
-    decoded_frame[0]=0; */
-  //  printf("CRC: %d \n" ,HAL_CRC_Calculate(&hcrc,decoded_frame, FRAME_SIZE));
-    
-  /*  decoded_frame[18]=1;
-    decoded_frame[20]=1;
-    */
-    
-    if(decoded_frame[14])
-    {
-      temp+=512;
-    }
-    if(decoded_frame[15])
-    {
-      temp+=256;
-    }
-    if(decoded_frame[16])
-    {
-      temp+=128;
-    }
-    if(decoded_frame[17])
-    {
-      temp+=64;
-    }
-    if(decoded_frame[18])
-    {
-      temp+=32;
-    }
-    if(decoded_frame[19])
-    {
-      temp+=16;
-    }
-    if(decoded_frame[20])
-    {
-      temp+=8;
-    }
-    if(decoded_frame[21])
-    {
-      temp+=4;
-    }
-    if(decoded_frame[22])
-    {
-      temp+=2;
-    }
-    if(decoded_frame[23])
-    {
-      temp+=1;
-    }
-    
-    printf("Temp: %d \n " ,temp);
-    //Display_Seven_Seg(temp,true);
-   
-    temp=0;
-  
-  return; 
-}
-
-
-void Send_one(void)
-
-{
-    uint16_t i;
-  
-    BSP_LED_On(LED4);
-    for ( i = 0; i < 6260; ++i );
-
-    BSP_LED_Off(LED4);
-    for ( i = 0; i < 9260; ++i );
-
-}
-
-void Send_zero(void)
-
-{
-    uint16_t i;
-  
-    BSP_LED_On(LED4);
-    for ( i = 0; i < 15500; ++i );
-
-    BSP_LED_Off(LED4);
-    for ( i = 0; i < 9260; ++i );
-
-}
-
-
-
-
 
 
 
@@ -713,7 +309,3 @@ void assert_failed(uint8_t* file, uint32_t line)
 }
 
 #endif
-
-
-
-

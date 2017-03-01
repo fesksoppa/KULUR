@@ -44,11 +44,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "tim.h"
-
+#include "main.h"
 #include "gpio.h"
+#include "kulur_functions.h"
 
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim1;
@@ -177,9 +177,113 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
   /* USER CODE END TIM1_MspDeInit 1 */
 } 
 
-/* USER CODE BEGIN 1 */
 
-/* USER CODE END 1 */
+
+///******* CALLLBACK INTERRUPT *******
+//******* Handles interrupt from the Radioreceiver, checks for preamble and
+//*******  then stores 300 samples in an buffer. After the samples are stored, the 
+//*******  function search for the net-id and channel number. If found, the frame is sent 
+//*******  to a decode functon, if not. The counter and flags are rested.
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
+  static uint32_t duty_in_microseconds=0;
+  static uint32_t buffer_array[SAMPLE_ARRAY_SIZE];//stores lots of samples
+//  static uint32_t preamble_bits[NUMBER_OF_PREAMBLE_BITS]; 
+  static uint16_t bit_counter=0; 
+  static uint8_t preamble_counter=0;
+  static bool preamble_flag=false;
+  static bool preamble_done=false;
+  
+  
+  //Lock interrupt
+  HAL_TIM_IC_Stop_IT(&htim1, TIM_CHANNEL_2);
+  HAL_TIM_IC_Stop_IT(&htim1, TIM_CHANNEL_1);
+  
+  //Captures the pulse width
+  if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+  {
+    duty_in_microseconds=HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
+    
+   
+  
+        
+   if(duty_in_microseconds>MINIMUM_DUTY_TICKS && duty_in_microseconds <MAX_DUTY_TICKS && !preamble_flag)
+    {   
+       if(duty_in_microseconds <PULSE_WIDTH_ONE)
+       {
+         preamble_counter++;
+       
+       }
+       else
+         preamble_counter=0;
+       
+       
+   
+    }
+    
+        
+        //Filter out ONEs and ZEROs when the preamble is found and fills sample array
+    if(!preamble_done && preamble_flag && ((duty_in_microseconds>PULSE_WIDTH_ZERO && duty_in_microseconds<MAX_DUTY_TICKS) || (duty_in_microseconds>MINIMUM_DUTY_TICKS && duty_in_microseconds<PULSE_WIDTH_ONE) ))
+    {
+      
+        buffer_array[bit_counter]=duty_in_microseconds;
+        bit_counter++; 
+        
+      if(bit_counter==SAMPLE_ARRAY_SIZE) //SAMPLE_ARRAY_SIZE = 300
+      {
+         for(int i=0;i<SAMPLE_ARRAY_SIZE-7;i++)
+         {    //Looks for the Net id and channel number
+             if(buffer_array[i]>= PULSE_WIDTH_ZERO && buffer_array[i] <= MAX_DUTY_TICKS && buffer_array[i+1]>= MINIMUM_DUTY_TICKS && 
+                buffer_array[i+1]<= PULSE_WIDTH_ONE && buffer_array[i+2]>= PULSE_WIDTH_ZERO && buffer_array[i+2] <= MAX_DUTY_TICKS 
+                  && buffer_array[i+3]>= PULSE_WIDTH_ZERO && buffer_array[i+3] <= MAX_DUTY_TICKS && buffer_array[i+4]>= MINIMUM_DUTY_TICKS 
+                    && buffer_array[i+4] <= PULSE_WIDTH_ONE && buffer_array[i+5]>= PULSE_WIDTH_ZERO && buffer_array[i+5] <= MAX_DUTY_TICKS 
+                      && buffer_array[i+6]>= PULSE_WIDTH_ZERO && buffer_array[i+6] <= MAX_DUTY_TICKS && buffer_array[i+7]>= PULSE_WIDTH_ZERO && buffer_array[i+7] <= MAX_DUTY_TICKS)
+            {
+               preamble_done=true;
+               bit_counter=i; 
+            } 
+               if(preamble_done)
+               {
+                 break;
+               }
+         }
+      } //Resets the the flags and counters
+      else if(bit_counter>SAMPLE_ARRAY_SIZE)
+      {
+            preamble_flag=false;
+            preamble_done=false;
+            preamble_counter=0;
+            bit_counter=0;
+      }
+     
+    }
+   
+   if(preamble_counter>=PREAMBLE_SIZE && !preamble_flag)
+      {
+         preamble_flag=true;
+      }
+   
+   //Sends the frame to the decoder 
+      if(preamble_done)
+        {
+            preamble_flag=false;
+            preamble_done=false;
+            preamble_counter=0;
+            frame_decoder(buffer_array,bit_counter);
+            bit_counter=0; //Do this after you send the frame
+        }
+  
+       
+  }
+  //Unlock interrupt
+   HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2);
+   HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+      
+  return;
+}
+
+
+
+
 
 /**
   * @}

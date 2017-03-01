@@ -46,7 +46,8 @@
   /* Includes ------------------------------------------------------------------*/
 
 #include "gpio.h"
-
+#include "string.h"
+#include "stdbool.h"
 
 
 
@@ -57,12 +58,13 @@
 #define NUMBER_OF_PREAMBLE_BITS 9
 #define BUFFERSIZEDATE 10
 #define BUFFERSIZETIME 5
-#define MINIMUM_DUTY_TICKS 500
-#define MAX_DUTY_TICKS 1600
-#define PREAMBLE_SIZE 9
-#define PULSE_WIDTH_ONE 650 
-#define PULSE_WIDTH_ZERO 1450     
+#define MINIMUM_DUTY_TICKS 400
+#define MAX_DUTY_TICKS 1700
+#define PREAMBLE_SIZE 4
+#define PULSE_WIDTH_ONE 800 
+#define PULSE_WIDTH_ZERO 1350     
 #define FRAME_SIZE 40
+#define SAMPLE_ARRAY_SIZE 300
 #define NUMBER_OF_SEG 9
 #define NUMBER_OF_NUMBERS 10
 #define DRDY_Pin GPIO_PIN_2

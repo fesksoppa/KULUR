@@ -14,10 +14,10 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-
+ITStatus UartReady; //Status flag for UART 
 /* USER CODE END 0 */
 
-ITStatus UartReady; //Status flag for UART 
+
 
 RTC_HandleTypeDef hrtc;
 
@@ -79,7 +79,7 @@ void RTC_TimeConfig(){
   
   static uint8_t Buffer[BUFFERSIZEDATE];
   
-  char *hello ="Welcome Bengt Fucktard, Enter Date & Time\n\r";
+  char *hello ="Welcome Bengt, Enter Date & Time\n\r";
   char *date ="Enter date (yyyy-mm-dd):\n\r";
   char *time ="Enter time (HH:MM):\n\r";
   
@@ -164,8 +164,23 @@ void RTC_TimeConfig(){
   HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR1, 0x32F2);
 } 
 
+
+void Transmit_Temp(uint16_t temp)
+{
+  char tempString[4];
+  tempString[0]=temp/100;
+  tempString[1]=(temp/10)%10;
+  tempString[2]=',';
+  tempString[3]=(temp%100)%10;
+  
+ // for(int i)
+  
+}
+
+
+
 //Updates Real time variables and date. 
-void Show_RTC_Time(uint8_t* hour, uint8_t* min){
+void Show_RTC_Time(uint8_t* hour, uint8_t* min, uint8_t* sec){
   
    RTC_TimeTypeDef stimestructureget;
    RTC_DateTypeDef sdatestructureget; //Needed to unlock the time
@@ -175,16 +190,13 @@ void Show_RTC_Time(uint8_t* hour, uint8_t* min){
    
    *min=stimestructureget.Minutes;
    *hour=stimestructureget.Hours;
-  // *sec=stimestructureget.Seconds;
+   *sec=stimestructureget.Seconds;
    
     
   // printf("Test_Date! %2d-%2d-%2d  \n ",sdatestructureget.Year,sdatestructureget.Month, sdatestructureget.Date);
   
     return;
 }
-
-
-
 
 /**
 brief: Tx transfer completed callback
@@ -209,4 +221,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
   /* Set transmission flag: transfer completed */ 
     UartReady = SET;
 }
+
+
 

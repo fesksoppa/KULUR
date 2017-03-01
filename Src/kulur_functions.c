@@ -4,6 +4,7 @@
 #include "main.h"
 #include "stdbool.h"
 #include "kulur_functions.h"
+#include "crc.h"
 
 /* Function Display_Seven_Seg
 Input: Temp - New temp value
@@ -17,10 +18,11 @@ Output: None
   static uint8_t tempAndTimeValues[8];
    
   uint8_t display_counter=0;
-  uint8_t hour=12;
-  uint8_t min=34;
+  uint8_t hour=0;
+  uint8_t min=0;
+  uint8_t sec=0;
  
- // Show_RTC_Time(&hour,&min); //Get current time 
+  Show_RTC_Time(&hour,&min, &sec); //Get current time 
  if(new_temp)
   {
     if(temp>=512) // Negativ temp
@@ -41,6 +43,15 @@ Output: None
   tempAndTimeValues[5]=hour%10;
   tempAndTimeValues[6]=min/10;
   tempAndTimeValues[7]=min%10;
+  
+ 
+  uint32_t current_second=HAL_GetTick();
+  static uint32_t last_second;
+  if((current_second-last_second)>500)
+  {
+    HAL_GPIO_TogglePin(GPIOC,Kolon_Pin);
+    last_second=current_second;
+  }
   
 
   //display_counter=1;
@@ -64,8 +75,7 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
         
-        //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
+        
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
@@ -86,8 +96,7 @@ Output: None
        HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET);
        HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
         
-        //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
+       
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
@@ -108,8 +117,7 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
        
-        //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
+       
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_RESET); //Decimalpunkt
         
@@ -131,8 +139,7 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
        
-        //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
+       
         
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
@@ -154,8 +161,7 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
         
-        //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
+       
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
@@ -176,8 +182,7 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
       
-        //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
+       
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
@@ -198,8 +203,8 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_SET); //set
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_RESET);
         
-        //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
+       
+      
         
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
         
@@ -220,8 +225,7 @@ Output: None
         HAL_GPIO_WritePin(GPIOC,DIG3clk_Pin,GPIO_PIN_RESET); 
         HAL_GPIO_WritePin(GPIOC,DIG4clk_Pin,GPIO_PIN_SET); //set
        
-        //Kolon
-        HAL_GPIO_WritePin(GPIOC,Kolon_Pin,GPIO_PIN_SET);
+        
         
        
         HAL_GPIO_WritePin(GPIOD,DP_led_Pin,GPIO_PIN_SET); //Decimalpunkt
@@ -396,8 +400,84 @@ Output: None
    
   } //While loop
   
-    //Kolon
-   // HAL_GPIO_TogglePin(GPIOC,Kolon_Pin);
+   
   
    return; //end of function
  }
+
+ 
+//Decodes the radioframe, takes the sample array and the position of the first bit in the frame
+//The function have a CRC, the temp value updates when the crc =0
+void frame_decoder(uint32_t radio_frame[] , uint16_t bit_counter)
+{
+  uint32_t decoded_frame[FRAME_SIZE]=0;
+  uint16_t temp=0;
+  
+ 
+   
+    //Dummy check
+  //if(bit_counter >= SAMPLE_ARRAY_SIZE-40)
+ // {
+   
+      for(int i=0;i<FRAME_SIZE;i++)
+      {
+        if(radio_frame[i+bit_counter]>=MINIMUM_DUTY_TICKS && radio_frame[i+bit_counter] <=PULSE_WIDTH_ONE)
+        {
+          decoded_frame[i]=1;
+        }
+        else if(radio_frame[i+bit_counter]>=PULSE_WIDTH_ZERO && radio_frame[i+bit_counter] <=MAX_DUTY_TICKS)
+        {
+          decoded_frame[i]=0;
+        }
+      }
+      //CRC Check 
+      if(HAL_CRC_Calculate(&hcrc,decoded_frame, FRAME_SIZE)==0)
+      { 
+      
+        if(decoded_frame[14])
+        {
+          temp+=512;
+        }
+        if(decoded_frame[15])
+        {
+          temp+=256;
+        }
+        if(decoded_frame[16])
+        {
+          temp+=128;
+        }
+        if(decoded_frame[17])
+        {
+          temp+=64;
+        }
+        if(decoded_frame[18])
+        {
+          temp+=32;
+        }
+        if(decoded_frame[19])
+        {
+          temp+=16;
+        }
+        if(decoded_frame[20])
+        {
+          temp+=8;
+        }
+        if(decoded_frame[21])
+        {
+          temp+=4;
+        }
+        if(decoded_frame[22])
+        {
+          temp+=2;
+        }
+        if(decoded_frame[23])
+        {
+          temp+=1;
+        }
+        
+        Display_Seven_Seg(temp,true);
+        
+      }
+ // }
+  return; 
+}
